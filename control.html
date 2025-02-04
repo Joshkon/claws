@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+<div id="grijpmachine_video"></div>
+<br>
+<br>
+<button onclick="startSpel()">Start spel</button>
+<button onclick="move('2')">Links</button>
+<button onclick="move('3')">Rechts</button>
+<button onclick="move('0')">Voor</button>
+<button onclick="move('1')">Achter</button>
+<button onclick="move('down')">Grijpen</button>
+<p>Start het spel eerst voordat je kan besturen.</p>
+<style>
+    #grijpmachine_video {
+        display: none;
+        width: 800px!important;
+        background-color: transparent!important;
+    }
+
+    .op-player .op-media-element-container video {
+        width:335px;
+        height: 100%;
+    }
+</style>
+<script src="https://code.jquery.com/jquery-3.6.3.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ovenplayer@0.10.24/dist/ovenplayer.min.js"></script>
+<script>
+    function startSpel() {
+        $.getJSON('/control/start').then(data => {
+            console.log(data)
+        })
+    }
+
+    function move(direction) {
+        if(direction == 'down') {
+            $.getJSON(`/control/grab`).then(data => {
+                console.log(data)
+            })
+            return;
+        }
+
+        $.getJSON(`/control/move?direction=${direction}`)
+        setTimeout(function () {
+            $.getJSON(`/control/move?direction=5`)
+        }, 500)
+    }
+</script>
+<script>
+        const player = OvenPlayer.create(`grijpmachine_video`, {
+            "autoStart": true,
+            "autoFallback": true,
+            "mute": true,
+            "controls": false,
+            "sources": [{
+                "type": "webrtc",
+                "file": "ws://78.47.84.92:3333/app/grijpmachine"
+            }],
+            "webrtcConfig": {
+                "timeoutMaxRetry": 4,
+                "connectionTimeout": 10000
+            }
+        });
+
+        player.on('stateChanged', function(data) {
+            if(data.newstate === "playing") {
+                document.getElementById('grijpmachine_video').style.display = 'block';
+            }
+        })
+</script>
+</body>
+</html>
